@@ -3,6 +3,7 @@
    ============================================================ */
 :root {
   --sidebar-width: 250px;
+  --panel-width: 305px;
   --column-width: 185px;
   --sem-bg-fall: #fff8ed;
   --sem-bg-spring: #f0faf0;
@@ -17,40 +18,58 @@ html, body { height: 100%; overflow: hidden; margin: 0; font-family: system-ui, 
   padding: 7px 14px; display: flex; align-items: center; gap: 8px;
   flex-wrap: wrap; z-index: 100; height: 48px; box-sizing: border-box;
 }
-.toolbar .brand { font-weight: 700; font-size: 1rem; white-space: nowrap; margin-right: 4px; }
+.toolbar .brand { font-weight: 700; font-size: 1rem; white-space: nowrap; }
 .toolbar .brand img { height: 26px; vertical-align: middle; margin-right: 5px; }
-.toolbar .btn  { font-size: .78rem; padding: 3px 9px; }
-.toolbar select { font-size: .78rem; padding: 3px 6px; max-width: 170px;
-  background: #2a2a3e; color: #fff; border: 1px solid rgba(255,255,255,.25); border-radius: 4px; }
-.toolbar .divider { width: 1px; height: 24px; background: rgba(255,255,255,.2); margin: 0 4px; }
+.toolbar .btn { font-size: .78rem; padding: 3px 9px; }
+.toolbar .divider { width: 1px; height: 24px; background: rgba(255,255,255,.2); margin: 0 3px; }
 
 /* ── Layout ──────────────────────────────────────────────── */
 .app-container { display: flex; height: calc(100vh - 48px); overflow: hidden; }
 
 /* ── Course Bank ─────────────────────────────────────────── */
+/* z-index above .leader-line so arrows never spill across the sidebars —
+   LeaderLine draws into body-level SVG and cannot be clipped to the timeline. */
 .course-bank {
   width: var(--sidebar-width); min-width: var(--sidebar-width);
   background: #f5f5f5; border-right: 2px solid #ddd;
   display: flex; flex-direction: column; overflow: hidden;
+  position: relative; z-index: 10;
 }
 .bank-header { padding: 9px 10px 7px; background: #ebebeb; border-bottom: 1px solid #ddd; }
 .bank-header h6 { margin: 0 0 6px; font-size: .8rem; font-weight: 700; text-transform: uppercase; color: #555; }
 .bank-search { width: 100%; font-size: .78rem; padding: 4px 7px;
   border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
 .bank-list { flex: 1; overflow-y: auto; padding: 7px; }
-.bank-list::-webkit-scrollbar { width: 5px; }
-.bank-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
-
-/* Drop highlight on bank */
 .bank-list.drop-over { background: rgba(37,99,235,.07); outline: 2px dashed #2563eb; outline-offset: -2px; }
+.bank-list::-webkit-scrollbar, .req-panel::-webkit-scrollbar,
+.timeline-area::-webkit-scrollbar { width: 6px; height: 6px; }
+.bank-list::-webkit-scrollbar-thumb, .req-panel::-webkit-scrollbar-thumb,
+.timeline-area::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
+/* Bank requirement-group headers */
+.bank-group-head {
+  font-size: .66rem; font-weight: 700; text-transform: uppercase;
+  color: #6b7280; letter-spacing: .04em;
+  padding: 8px 3px 4px; margin-top: 4px;
+  border-bottom: 1px solid #e0e0e0; display: flex;
+  justify-content: space-between; align-items: baseline; gap: 6px;
+}
+.bank-group-head:first-child { margin-top: 0; }
+.bank-group-head .grp-count { font-weight: 600; color: #9ca3af; }
+.bank-group-head.done .grp-count { color: #16a34a; }
+.bank-group-cards { display: flex; flex-direction: column; gap: 5px; padding: 5px 0; }
+.bank-other-toggle {
+  width: 100%; text-align: left; background: none; border: none;
+  font-size: .66rem; font-weight: 700; text-transform: uppercase;
+  color: #9ca3af; padding: 8px 3px 4px; cursor: pointer;
+  border-top: 1px solid #e0e0e0; margin-top: 6px;
+}
+.bank-other-toggle:hover { color: #555; }
 
 /* ── Timeline ────────────────────────────────────────────── */
-.timeline-area { flex: 1; overflow-x: auto; overflow-y: auto; position: relative; }
-.timeline-area::-webkit-scrollbar { width: 6px; height: 6px; }
-.timeline-area::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+.timeline-area { flex: 1; overflow-x: auto; overflow-y: auto; position: relative; min-width: 0; }
 .timeline-scroll { display: flex; min-height: 100%; padding-bottom: 60px; }
 
-/* ── Semester Columns ────────────────────────────────────── */
 .semester-column { width: var(--column-width); min-width: var(--column-width);
   border-right: 1px solid #dde; display: flex; flex-direction: column; flex-shrink: 0; }
 .sem-header { text-align: center; font-weight: 700; font-size: .78rem;
@@ -59,52 +78,136 @@ html, body { height: 100%; overflow: hidden; margin: 0; font-family: system-ui, 
 .sem-header.fall   { background: var(--sem-bg-fall);   color: #92400e; }
 .sem-header.spring { background: var(--sem-bg-spring); color: #166534; }
 .credit-label { font-size: .65rem; font-weight: 400; color: #888; display: block; }
+.credit-label.over { color: #dc2626; font-weight: 600; }
 .drop-zone { flex: 1; min-height: 480px; padding: 6px; display: flex;
   flex-direction: column; gap: 5px; transition: background .15s; }
 .drop-zone.fall   { background: rgba(255,248,237,.35); }
 .drop-zone.spring { background: rgba(240,250,240,.35); }
-.drop-zone.drag-over  { background: rgba(37,99,235,.1);  outline: 2px dashed #2563eb; outline-offset: -2px; }
-.drop-zone.warn-over  { background: rgba(234,179,8,.12); outline: 2px dashed #d97706; outline-offset: -2px; }
+.drop-zone.drag-over { background: rgba(37,99,235,.1);  outline: 2px dashed #2563eb; outline-offset: -2px; }
+.drop-zone.warn-over { background: rgba(234,179,8,.12); outline: 2px dashed #d97706; outline-offset: -2px; }
 
 /* ── Course Cards ────────────────────────────────────────── */
 .course-card {
   background: #fff; border: 1px solid #d4d4d4; border-left: 4px solid #9ca3af;
   border-radius: 5px; padding: 6px 8px; cursor: grab;
   font-size: .76rem; user-select: none; position: relative;
-  transition: box-shadow .15s;
+  transition: box-shadow .15s, opacity .18s;
 }
-.course-card:hover   { box-shadow: 0 2px 8px rgba(0,0,0,.13); z-index: 20; }
+.course-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.13); z-index: 20; }
 .course-card.dragging { opacity: .8; box-shadow: 0 6px 20px rgba(0,0,0,.22); cursor: grabbing; z-index: 999; }
-.card-id      { font-weight: 700; color: #111; font-size: .8rem; }
-.card-name    { color: #555; font-size: .7rem; line-height: 1.25; margin-top: 1px; }
-.card-meta    { font-size: .62rem; color: #999; margin-top: 2px; }
-.card-tracks  { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 3px; }
-.track-badge  { font-size: .58rem; padding: 1px 4px; border-radius: 3px;
+.card-id     { font-weight: 700; color: #111; font-size: .8rem; }
+.card-name   { color: #555; font-size: .7rem; line-height: 1.25; margin-top: 1px; }
+.card-meta   { font-size: .62rem; color: #999; margin-top: 3px;
+  display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.card-tracks { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 3px; }
+
+/* Badges */
+.track-badge { font-size: .58rem; padding: 1px 4px; border-radius: 3px;
   color: #fff; font-weight: 600; line-height: 1.4; }
+.track-badge.neutral { background: #e5e7eb; color: #4b5563; }
+.track-badge.more {
+  background: transparent; color: #9ca3af;
+  border: 1px solid #d1d5db; font-weight: 500; cursor: help;
+}
 
-/* Status indicators */
-.course-card.not-offered    { background: var(--stripe); }
-.course-card.prereq-warn    { border-color: #eab308; }
-.warn-icon   { position: absolute; top: 3px; right: 5px; font-size: .7rem; color: #ca8a04; cursor: help; }
-.no-offer-pill { position: absolute; top: 3px; right: 5px;
-  font-size: .58rem; background: #fef3c7; color: #92400e;
-  padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+/* Inline status chips — no longer absolutely positioned, so they
+   never collide with the remove button or sit over the arrow layer. */
+.chip-warn    { background: #fef9c3; color: #854d0e; padding: 0 4px;
+  border-radius: 3px; font-weight: 600; cursor: help; }
+.chip-nooffer { background: #fef3c7; color: #92400e; padding: 0 4px;
+  border-radius: 3px; font-weight: 600; }
+.course-card.not-offered { background: var(--stripe); }
+.course-card.prereq-warn { border-color: #eab308; }
 
-/* Remove button */
+/* Remove button — inside the card bounds */
 .remove-btn {
-  position: absolute; top: -7px; right: -7px;
-  width: 17px; height: 17px; background: #ef4444; color: #fff;
-  border: 2px solid #fff; border-radius: 50%; font-size: .6rem;
-  line-height: 13px; text-align: center; cursor: pointer; display: none;
-  padding: 0; z-index: 30;
+  position: absolute; top: 3px; right: 3px;
+  width: 16px; height: 16px; background: #ef4444; color: #fff;
+  border: none; border-radius: 50%; font-size: .62rem;
+  line-height: 16px; text-align: center; cursor: pointer;
+  display: none; padding: 0; z-index: 30;
 }
 .course-card:hover .remove-btn { display: block; }
 
-/* ── LeaderLine z-index fix ──────────────────────────────── */
+/* Focus-mode states */
+.course-card.dimmed       { opacity: .22; }
+.course-card.chain-focus  { box-shadow: 0 0 0 2px #2563eb, 0 3px 10px rgba(0,0,0,.15); z-index: 25; }
+.course-card.chain-member { box-shadow: 0 0 0 2px rgba(37,99,235,.35); }
+.course-card.flash        { animation: flash 1.1s ease-out; }
+@keyframes flash {
+  0%,100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); }
+  20%     { box-shadow: 0 0 0 3px rgba(37,99,235,.7); }
+}
+
 .leader-line { z-index: 6 !important; pointer-events: none; }
 
-/* ── Modals ──────────────────────────────────────────────── */
-.modal .form-label { font-size: .82rem; font-weight: 600; }
+/* ── Requirements Panel ──────────────────────────────────── */
+.req-panel {
+  width: var(--panel-width); min-width: var(--panel-width);
+  background: #fafafa; border-left: 2px solid #ddd;
+  display: flex; flex-direction: column; overflow: hidden;
+  position: relative; z-index: 10;
+}
+.app-container.panel-collapsed .req-panel { display: none; }
+
+.req-head { padding: 9px 11px; background: #ebebeb; border-bottom: 1px solid #ddd; }
+.req-head select { width: 100%; font-size: .78rem; padding: 4px 6px;
+  border: 1px solid #ccc; border-radius: 4px; }
+.req-title { font-size: .82rem; font-weight: 700; color: #333; margin: 7px 0 2px; }
+.req-credits { font-size: .7rem; color: #666; }
+.req-credits b { color: #111; }
+.req-draft {
+  font-size: .64rem; background: #fff7ed; color: #9a3412;
+  border: 1px solid #fed7aa; border-radius: 4px;
+  padding: 4px 6px; margin-top: 7px; line-height: 1.35;
+}
+.req-body { flex: 1; overflow-y: auto; padding: 9px 11px 14px; }
+.req-foot { padding: 9px 11px; border-top: 1px solid #ddd; background: #f0f0f0; }
+
+.req-group { margin-bottom: 13px; }
+.req-group-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 6px; font-size: .74rem; font-weight: 700; color: #374151;
+  padding-bottom: 4px; border-bottom: 1px solid #e5e7eb; margin-bottom: 5px;
+}
+.req-group-head .note { font-weight: 400; font-size: .64rem; color: #9ca3af; }
+.req-progress { font-size: .68rem; font-weight: 700; color: #9ca3af; white-space: nowrap; }
+.req-group.done .req-group-head { color: #15803d; }
+.req-group.done .req-progress   { color: #16a34a; }
+
+.req-chips { display: flex; flex-wrap: wrap; gap: 3px; }
+.req-chip {
+  font-size: .63rem; padding: 2px 6px; border-radius: 10px;
+  border: 1px solid #d1d5db; background: #fff; color: #6b7280;
+  cursor: pointer; white-space: nowrap;
+}
+.req-chip:hover { border-color: #2563eb; color: #2563eb; }
+.req-chip.placed {
+  background: #dcfce7; border-color: #86efac; color: #15803d; font-weight: 600;
+}
+.req-chip.placed::before { content: "✓ "; }
+
+/* OR groups — the MATH vs BAAS fork */
+.alt-wrap { display: flex; align-items: stretch; gap: 5px; }
+.alt-option {
+  flex: 1; border: 1px solid #e5e7eb; border-radius: 5px;
+  padding: 5px 6px; background: #fff; transition: opacity .2s;
+}
+.alt-option.inactive { opacity: .35; }
+.alt-option.satisfied { border-color: #86efac; background: #f0fdf4; }
+.alt-label { font-size: .63rem; font-weight: 700; color: #6b7280; margin-bottom: 4px; }
+.alt-option.satisfied .alt-label { color: #15803d; }
+.alt-or {
+  align-self: center; font-size: .6rem; font-weight: 700; color: #9ca3af;
+  background: #f3f4f6; border-radius: 9px; padding: 2px 5px; white-space: nowrap;
+}
+.alt-option .req-chips { flex-direction: column; align-items: flex-start; }
 
 /* ── Toast ───────────────────────────────────────────────── */
 #toast-container { z-index: 9999; }
+
+/* ── Library-failed-to-load banner ───────────────────────── */
+.lib-warning {
+  background: #fef2f2; color: #991b1b; border-bottom: 1px solid #fecaca;
+  font-size: .78rem; padding: 7px 14px; line-height: 1.4;
+}
