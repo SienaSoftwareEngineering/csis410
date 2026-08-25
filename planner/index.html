@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="Ninad Chaudhari &amp; Jami Cotler">
+  <title>Course Planner — Siena College CS</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/planner.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- ── Toolbar ──────────────────────────────────────────────── -->
+<div class="toolbar">
+  <span class="brand">
+    <img src="../images/siena-logo.png" alt="Siena">
+    CS Course Planner
+  </span>
+  <div class="divider"></div>
+  <button class="btn btn-sm btn-outline-light" id="btn-upload" title="Load a saved plan">&#128194; Upload</button>
+  <button class="btn btn-sm btn-outline-light" id="btn-download" title="Download current plan">&#128190; Download</button>
+  <div class="divider"></div>
+  <button class="btn btn-sm btn-outline-info"    id="btn-add-course" title="Add course to catalog">+ Course</button>
+  <button class="btn btn-sm btn-outline-info"    id="btn-add-dep"    title="Add prerequisite link">+ Dependency</button>
+  <div class="divider"></div>
+  <button class="btn btn-sm btn-outline-warning" id="btn-add-year"   title="Add one year to timeline">+ Year</button>
+  <button class="btn btn-sm btn-outline-warning" id="btn-rem-year"   title="Remove last year">− Year</button>
+  <div class="ms-auto">
+    <select id="track-filter" title="Filter course bank by track">
+      <option value="">All Tracks</option>
+    </select>
+  </div>
+  <input type="file" id="file-upload" accept=".json" style="display:none">
+</div>
+
+<!-- ── App ──────────────────────────────────────────────────── -->
+<div class="app-container">
+
+  <!-- Course Bank -->
+  <div class="course-bank">
+    <div class="bank-header">
+      <h6>Course Bank</h6>
+      <input type="text" class="bank-search" id="bank-search" placeholder="Search…">
+    </div>
+    <div class="bank-list" id="bank-list"></div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="timeline-area">
+    <div class="timeline-scroll" id="timeline-scroll"></div>
+  </div>
+</div>
+
+<!-- ── Add Course Modal ──────────────────────────────────────── -->
+<div class="modal fade" id="addCourseModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Course</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="add-course-form">
+          <div class="row g-2 mb-2">
+            <div class="col-5">
+              <label class="form-label">Course ID *</label>
+              <input type="text" class="form-control form-control-sm" id="nc-id" placeholder="CSIS-420">
+            </div>
+            <div class="col-7">
+              <label class="form-label">Course Name *</label>
+              <input type="text" class="form-control form-control-sm" id="nc-name" placeholder="Advanced Topics">
+            </div>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-4">
+              <label class="form-label">Credits</label>
+              <input type="number" class="form-control form-control-sm" id="nc-credits" value="3" min="1" max="6">
+            </div>
+            <div class="col-4">
+              <label class="form-label">Offered</label>
+              <select class="form-select form-select-sm" id="nc-semester">
+                <option value="every">Every semester</option>
+                <option value="both">Both (yearly)</option>
+                <option value="fall">Fall only</option>
+                <option value="spring">Spring only</option>
+              </select>
+            </div>
+            <div class="col-4">
+              <label class="form-label">Period</label>
+              <select class="form-select form-select-sm" id="nc-period">
+                <option value="1">Every year</option>
+                <option value="2">Every 2 yrs</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Start Year <small class="text-muted">(for 2-yr rotation)</small></label>
+            <input type="number" class="form-control form-control-sm" id="nc-startyear" placeholder="2024">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Tracks <small class="text-muted">(comma-sep: SD, AI, GD…)</small></label>
+            <input type="text" class="form-control form-control-sm" id="nc-tracks" placeholder="SD, AI">
+          </div>
+          <div class="mb-1">
+            <label class="form-label">Prerequisites <small class="text-muted">(comma-sep course IDs)</small></label>
+            <input type="text" class="form-control form-control-sm" id="nc-prereqs" placeholder="CSIS-210, MATH-250">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-sm btn-primary" id="add-course-submit">Add Course</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add Dependency Modal ──────────────────────────────────── -->
+<div class="modal fade" id="addDepModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Prerequisite</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label">Prerequisite (FROM)</label>
+        <select class="form-select form-select-sm mb-2" id="dep-from"></select>
+        <div class="text-center mb-2" style="font-size:1.3rem">↓</div>
+        <label class="form-label">Requires it (TO)</label>
+        <select class="form-select form-select-sm" id="dep-to"></select>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-sm btn-primary" id="add-dep-submit">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast Container ──────────────────────────────────────── -->
+<div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+<!-- ── Scripts ──────────────────────────────────────────────── -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leader-line/leader-line.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/arrows.js"></script>
+<script src="js/app.js"></script>
+<script>
+  // Populate track filter dropdown
+  Object.entries(TRACKS).forEach(([code, info]) => {
+    const o = document.createElement("option");
+    o.value = code; o.textContent = `${code} – ${info.name}`;
+    document.getElementById("track-filter").appendChild(o);
+  });
+</script>
+</body>
+</html>
