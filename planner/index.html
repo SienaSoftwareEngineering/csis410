@@ -17,30 +17,33 @@
     CS Course Planner
   </span>
   <div class="divider"></div>
-  <button class="btn btn-sm btn-outline-light" id="btn-upload" title="Load a saved plan">&#128194; Upload</button>
-  <button class="btn btn-sm btn-outline-light" id="btn-download" title="Download current plan">&#128190; Download</button>
+  <button class="btn btn-sm btn-outline-light" id="btn-upload"   title="Load a saved plan">&#128194; Upload</button>
+  <button class="btn btn-sm btn-outline-light" id="btn-download" title="Download this plan as JSON">&#128190; Download</button>
   <div class="divider"></div>
-  <button class="btn btn-sm btn-outline-info"    id="btn-add-course" title="Add course to catalog">+ Course</button>
-  <button class="btn btn-sm btn-outline-info"    id="btn-add-dep"    title="Add prerequisite link">+ Dependency</button>
+  <button class="btn btn-sm btn-outline-info" id="btn-add-course" title="Add a course to the catalog">+ Course</button>
+  <button class="btn btn-sm btn-outline-info" id="btn-add-dep"    title="Add a prerequisite link">+ Dependency</button>
   <div class="divider"></div>
-  <button class="btn btn-sm btn-outline-warning" id="btn-add-year"   title="Add one year to timeline">+ Year</button>
-  <button class="btn btn-sm btn-outline-warning" id="btn-rem-year"   title="Remove last year">− Year</button>
+  <button class="btn btn-sm btn-outline-warning" id="btn-add-year" title="Add a year to the timeline">+ Year</button>
+  <button class="btn btn-sm btn-outline-warning" id="btn-rem-year" title="Remove the last year">&minus; Year</button>
+  <div class="divider"></div>
+  <button class="btn btn-sm btn-outline-light" id="btn-arrow-mode"
+          title="Cycle arrow display: Focus (hover a course) → All → Off">Arrows: Focus</button>
+
   <div class="ms-auto">
-    <select id="track-filter" title="Filter course bank by track">
-      <option value="">All Tracks</option>
-    </select>
+    <button class="btn btn-sm btn-outline-light" id="btn-toggle-panel"
+            title="Show or hide the requirements panel">Requirements &raquo;</button>
   </div>
   <input type="file" id="file-upload" accept=".json" style="display:none">
 </div>
 
 <!-- ── App ──────────────────────────────────────────────────── -->
-<div class="app-container">
+<div class="app-container" id="app-container">
 
   <!-- Course Bank -->
   <div class="course-bank">
     <div class="bank-header">
       <h6>Course Bank</h6>
-      <input type="text" class="bank-search" id="bank-search" placeholder="Search…">
+      <input type="text" class="bank-search" id="bank-search" placeholder="Search courses…">
     </div>
     <div class="bank-list" id="bank-list"></div>
   </div>
@@ -48,6 +51,22 @@
   <!-- Timeline -->
   <div class="timeline-area">
     <div class="timeline-scroll" id="timeline-scroll"></div>
+  </div>
+
+  <!-- Requirements Panel -->
+  <div class="req-panel">
+    <div class="req-head">
+      <select id="track-filter" title="Choose a track to see its requirements">
+        <option value="">— No track selected —</option>
+      </select>
+      <div id="req-summary"></div>
+    </div>
+    <div class="req-body" id="req-body"></div>
+    <div class="req-foot">
+      <button class="btn btn-sm btn-primary w-100" id="btn-load-template" disabled>
+        Load suggested 4-year plan
+      </button>
+    </div>
   </div>
 </div>
 
@@ -93,16 +112,27 @@
               </select>
             </div>
           </div>
-          <div class="mb-2">
-            <label class="form-label">Start Year <small class="text-muted">(for 2-yr rotation)</small></label>
-            <input type="number" class="form-control form-control-sm" id="nc-startyear" placeholder="2024">
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label">Start Year <small class="text-muted">(2-yr only)</small></label>
+              <input type="number" class="form-control form-control-sm" id="nc-startyear" placeholder="2024">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Category</label>
+              <select class="form-select form-select-sm" id="nc-category">
+                <option value="cs">Computer Science</option>
+                <option value="math">Math / Auxiliary</option>
+                <option value="core">Core (Gen-Ed)</option>
+                <option value="free">Free Elective</option>
+              </select>
+            </div>
           </div>
           <div class="mb-2">
-            <label class="form-label">Tracks <small class="text-muted">(comma-sep: SD, AI, GD…)</small></label>
+            <label class="form-label">Tracks <small class="text-muted">(comma-separated: SD, AI, GD…)</small></label>
             <input type="text" class="form-control form-control-sm" id="nc-tracks" placeholder="SD, AI">
           </div>
           <div class="mb-1">
-            <label class="form-label">Prerequisites <small class="text-muted">(comma-sep course IDs)</small></label>
+            <label class="form-label">Prerequisites <small class="text-muted">(comma-separated course IDs)</small></label>
             <input type="text" class="form-control form-control-sm" id="nc-prereqs" placeholder="CSIS-210, MATH-250">
           </div>
         </form>
@@ -126,9 +156,16 @@
       <div class="modal-body">
         <label class="form-label">Prerequisite (FROM)</label>
         <select class="form-select form-select-sm mb-2" id="dep-from"></select>
-        <div class="text-center mb-2" style="font-size:1.3rem">↓</div>
+        <div class="text-center mb-2" style="font-size:1.3rem">&darr;</div>
         <label class="form-label">Requires it (TO)</label>
-        <select class="form-select form-select-sm" id="dep-to"></select>
+        <select class="form-select form-select-sm mb-3" id="dep-to"></select>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="dep-alt">
+          <label class="form-check-label" for="dep-alt" style="font-size:.75rem">
+            Alternative route <small class="text-muted d-block">
+            Dashed “either” arrow — one of several ways to satisfy the target.</small>
+          </label>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -138,7 +175,6 @@
   </div>
 </div>
 
-<!-- ── Toast Container ──────────────────────────────────────── -->
 <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
 
 <!-- ── Scripts ──────────────────────────────────────────────── -->
@@ -146,15 +182,8 @@
 <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leader-line/leader-line.min.js"></script>
 <script src="js/data.js"></script>
+<script src="js/requirements.js"></script>
 <script src="js/arrows.js"></script>
 <script src="js/app.js"></script>
-<script>
-  // Populate track filter dropdown
-  Object.entries(TRACKS).forEach(([code, info]) => {
-    const o = document.createElement("option");
-    o.value = code; o.textContent = `${code} – ${info.name}`;
-    document.getElementById("track-filter").appendChild(o);
-  });
-</script>
 </body>
 </html>
