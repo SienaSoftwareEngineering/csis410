@@ -16,10 +16,13 @@ const CORE_39 = [
 ];
 
 // The MATH-vs-BAAS fork, shared by every track.
+// MATH-101 (Prep Calc) and BAAS-105 also appear on the sheets but are
+// placement-dependent, so they are not counted as required here.
 const MATH_SEQUENCE_GROUP = {
   id: "math-seq",
   label: "Math Sequence",
   note: "choose ONE path",
+  hint: "MATH-101 or BAAS-105 may also be required, depending on placement.",
   type: "anyOf",
   options: [
     { id: "calc", label: "Calculus path", courses: ["MATH-110","MATH-120"] },
@@ -38,8 +41,16 @@ const AUX_TAIL_GROUP = {
   ],
 };
 
-const coreGroup = () => ({
-  id: "core", label: "Core (Gen-Ed)", note: "39 hrs", type: "all", courses: [...CORE_39],
+const coreGroup = (opts = {}) => ({
+  id: "core", label: "Core (Gen-Ed)", note: "39 hrs", type: "all",
+  placeholder: true,
+  courses: (opts.omit ? CORE_39.filter(c => !opts.omit.includes(c)) : [...CORE_39]),
+});
+
+// A simple either/or between single courses, rendered as two OR boxes.
+const eitherGroup = (id, label, ids) => ({
+  id, label, note: "choose ONE", type: "anyOf",
+  options: ids.map(c => ({ id: c.toLowerCase(), label: c, courses: [c] })),
 });
 
 const electiveGroup = (count, label) => ({
@@ -53,7 +64,7 @@ const electiveGroup = (count, label) => ({
 });
 
 const TRACK_REQUIREMENTS = {
-  // ── Authored from the 2024 advising sheet ───────────────
+  // ── Authored from the 2024 advising sheets ─────────────
   SD: {
     name: "Software Development Track",
     source: "advising sheet 2024",
@@ -64,7 +75,7 @@ const TRACK_REQUIREMENTS = {
                   "CSIS-350","CSIS-390","CSIS-410","CSIS-415"] },
       electiveGroup(3),
       MATH_SEQUENCE_GROUP,
-      { id: "aux", label: "Auxiliary", note: "15–17 hrs", type: "all",
+      { id: "aux", label: "Auxiliary", note: "15\u201317 hrs", type: "all",
         courses: ["CSIS-011","MATH-250"] },
       AUX_TAIL_GROUP,
     ],
@@ -79,81 +90,156 @@ const TRACK_REQUIREMENTS = {
         courses: ["CSIS-110","CSIS-120","CSIS-210","CSIS-220","CSIS-225","CSIS-385","CSIS-411"] },
       electiveGroup(4),
       MATH_SEQUENCE_GROUP,
-      { id: "aux", label: "Auxiliary", note: "15–17 hrs", type: "all",
+      { id: "aux", label: "Auxiliary", note: "15\u201317 hrs", type: "all",
         courses: ["CSIS-011","MATH-250","MATH-350"] },
     ],
   },
 
-  // ── Derived from the offerings spreadsheet track tags ───
-  // Flagged `draft` so the panel tells the advisor to verify.
-  GD: { name: "Game Development Track", draft: true, groups: [
-    coreGroup(),
-    { id: "cs-req", label: "Computer Science", type: "all",
-      courses: ["CSIS-110","CSIS-120","CSIS-210","CSIS-225","CSIS-385","CSIS-411","CSIS-350"] },
-    { id: "track-req", label: "Game Development Requirements", note: "choose 3", type: "choose", count: 3,
-      courses: ["CSIS-380","CSIS-345","CSIS-320","CSIS-375","CSIS-335","CSIS-330","CSIS-365"] },
-    electiveGroup(1),
-    MATH_SEQUENCE_GROUP,
-    { id: "aux", label: "Auxiliary", type: "all", courses: ["CSIS-011","MATH-250"] },
-    AUX_TAIL_GROUP,
-  ]},
+  AI: {
+    name: "Artificial Intelligence Track",
+    source: "advising sheet 2024",
+    note: "CSIS-375 should be taken immediately after CSIS-210, and before " +
+          "Machine Learning (CSIS-320) and Robotics (CSIS-370).",
+    groups: [
+      coreGroup(),
+      { id: "cs-req", label: "Computer Science", note: "34+ hrs", type: "all",
+        courses: ["CSIS-110","CSIS-120","CSIS-210","CSIS-220","CSIS-225","CSIS-385",
+                  "CSIS-375","CSIS-320","CSIS-370","CSIS-371"] },
+      eitherGroup("capstone", "Capstone", ["CSIS-499","SCDV-480"]),
+      { id: "aux", label: "Auxiliary", note: "no BAAS alternative on this track", type: "all",
+        courses: ["MATH-110","MATH-120","MATH-220","MATH-230","MATH-250","DATA-110"] },
+    ],
+  },
 
-  AI: { name: "Artificial Intelligence Track", draft: true, groups: [
-    coreGroup(),
-    { id: "cs-req", label: "Computer Science", type: "all",
-      courses: ["CSIS-110","CSIS-120","CSIS-210","CSIS-225","CSIS-385","CSIS-411"] },
-    { id: "track-req", label: "AI Requirements", note: "choose 3", type: "choose", count: 3,
-      courses: ["CSIS-375","CSIS-320","CSIS-371","CSIS-370"] },
-    electiveGroup(2),
-    MATH_SEQUENCE_GROUP,
-    { id: "aux", label: "Auxiliary", type: "all", courses: ["CSIS-011","MATH-250"] },
-    AUX_TAIL_GROUP,
-  ]},
+  GD: {
+    name: "Game Development Track",
+    source: "advising sheet 2024",
+    groups: [
+      coreGroup(),
+      { id: "cs-req", label: "Computer Science", note: "34 hrs", type: "all",
+        courses: ["CSIS-110","CSIS-120","CSIS-210","CSIS-225","CSIS-385","CSIS-411",
+                  "CSIS-380","CSIS-345","CSIS-301"] },
+      eitherGroup("gd-sys",  "Systems",   ["CSIS-330","CSIS-335"]),
+      eitherGroup("gd-data", "Data",      ["CSIS-350","CSIS-365"]),
+      eitherGroup("gd-ai",   "AI",        ["CSIS-320","CSIS-371","CSIS-375"]),
+      { id: "aux", label: "Auxiliary", note: "24\u201325 hrs", type: "all",
+        courses: ["MATH-110","MATH-120","MATH-250","MATH-350","MUMD-225"] },
+      eitherGroup("gd-stats",      "Statistics", ["MATH-210","MATH-230"]),
+      eitherGroup("gd-internship", "Internship", ["SCDV-480","MUMD-490"]),
+    ],
+  },
 
-  CY: { name: "Cyber Track", draft: true, groups: [
-    coreGroup(),
-    { id: "cs-req", label: "Computer Science", type: "all",
-      courses: ["CSIS-110","CSIS-120","CSIS-205","CSIS-210","CSIS-220","CSIS-225","CSIS-385","CSIS-411","CSIS-350"] },
-    { id: "track-req", label: "Cyber Requirements", note: "choose 3", type: "choose", count: 3,
-      courses: ["CSIS-306","CSIS-400","CSIS-330","CSIS-365"] },
-    MATH_SEQUENCE_GROUP,
-    { id: "aux", label: "Auxiliary", type: "all", courses: ["CSIS-011","MATH-250"] },
-    AUX_TAIL_GROUP,
-  ]},
+  IS: {
+    name: "Information Systems Track",
+    source: "advising sheet 2024",
+    groups: [
+      coreGroup(),
+      { id: "cs-req", label: "Computer Science", note: "33+ hrs", type: "all",
+        courses: ["CSIS-110","CSIS-120","CSIS-210","CSIS-225","CSIS-385","CSIS-411","CSIS-368"] },
+      eitherGroup("is-web", "Web",      ["CSIS-180","CSIS-390"]),
+      eitherGroup("is-db",  "Database", ["CSIS-115","CSIS-350"]),
+      { id: "is-electives", label: "IS Electives", note: "choose 2", type: "choose", count: 2,
+        courses: ["CSIS-355","CSIS-306","CSIS-365","CSIS-331","CSIS-410","CSIS-415"],
+        alsoAllow: ["SCDV-480"] },
+      MATH_SEQUENCE_GROUP,
+      { id: "aux", label: "Auxiliary", note: "26\u201327 hrs", type: "all",
+        courses: ["CSIS-011","MATH-250","BAAS-200","BAAS-320","BAAS-330","BAAS-420"] },
+      eitherGroup("is-mgmt", "Management", ["MGMT-211","MGMT-230"]),
+    ],
+  },
 
-  IS: { name: "Information Systems Track", draft: true, groups: [
-    coreGroup(),
-    { id: "cs-req", label: "Computer Science", type: "all",
-      courses: ["CSIS-110","CSIS-120","CSIS-210","CSIS-225","CSIS-385","CSIS-411","CSIS-350","CSIS-390","CSIS-410","CSIS-415"] },
-    { id: "track-req", label: "IS Requirements", note: "choose 2", type: "choose", count: 2,
-      courses: ["CSIS-355","CSIS-368","CSIS-331","CSIS-365","CSIS-306"] },
-    MATH_SEQUENCE_GROUP,
-    { id: "aux", label: "Auxiliary", type: "all", courses: ["CSIS-011","MATH-250"] },
-    AUX_TAIL_GROUP,
-  ]},
+  EN: {
+    name: "Entrepreneurship Track",
+    source: "advising sheet 2024",
+    groups: [
+      coreGroup(),
+      { id: "cs-req", label: "Computer Science", note: "34+ hrs", type: "all",
+        courses: ["CSIS-110","CSIS-120","CSIS-210","CSIS-225","CSIS-385","CSIS-411",
+                  "CSIS-350","CSIS-410","CSIS-415"] },
+      eitherGroup("en-app", "Application", ["CSIS-390","CSIS-331"]),
+      MATH_SEQUENCE_GROUP,
+      { id: "aux", label: "Auxiliary", note: "15\u201317 hrs", type: "all",
+        courses: ["MATH-250"] },
+      { id: "biz", label: "Business Sequence", type: "all",
+        courses: ["MRKT-212","ENTR-310","ENTR-332","ENTR-340","ENTR-410"] },
+    ],
+  },
 
-  EN: { name: "Entrepreneurial Track", draft: true, groups: [
-    coreGroup(),
-    { id: "cs-req", label: "Computer Science", type: "all",
-      courses: ["CSIS-110","CSIS-120","CSIS-210","CSIS-225","CSIS-385","CSIS-411","CSIS-350","CSIS-390","CSIS-410","CSIS-415"] },
-    { id: "track-req", label: "Entrepreneurial Requirements", note: "choose 1", type: "choose", count: 1,
-      courses: ["CSIS-331"] },
-    electiveGroup(2),
-    MATH_SEQUENCE_GROUP,
-    { id: "aux", label: "Auxiliary", type: "all", courses: ["CSIS-011","MATH-250"] },
-    AUX_TAIL_GROUP,
-  ]},
+  ED: {
+    name: "CS Education Track",
+    source: "advising sheet 2024",
+    note: "EDUC-210 satisfies the SocSci (CDS) Core slot and EDUC-261 satisfies " +
+          "F-Div (CFD), so both are listed under Education rather than Core.",
+    groups: [
+      // Two Core slots are covered by the Education sequence below.
+      coreGroup({ omit: ["CORE-SOCSCI","CORE-FDIV"] }),
+      { id: "cs-req", label: "Computer Science", note: "36 hrs", type: "all",
+        courses: ["CSIS-110","CSIS-120","CSIS-210","CSIS-220","CSIS-225","CSIS-385",
+                  "CSIS-106","CSIS-306","CSIS-365","CSIS-390"] },
+      electiveGroup(1),
+      { id: "aux", label: "Mathematics", note: "15 hrs", type: "all",
+        courses: ["MATH-110","MATH-120","MATH-250","MATH-350"] },
+      { id: "educ", label: "Education Sequence", note: "32 hrs", type: "all",
+        courses: ["EDUC-210","EDUC-260","EDUC-261","EDUC-365","EDUC-381","EDUC-481"] },
+      { id: "educ-st", label: "Student Teaching", note: "final spring", type: "all",
+        courses: ["EDUC-461","EDUC-462","EDUC-487","EDUC-495","EDUC-496"] },
+    ],
+  },
 
-  ED: { name: "CS Education Track", draft: true, groups: [
-    coreGroup(),
-    { id: "cs-req", label: "Computer Science", type: "all",
-      courses: ["CSIS-110","CSIS-120","CSIS-210","CSIS-220","CSIS-225","CSIS-385","CSIS-411","CSIS-390"] },
-    { id: "track-req", label: "CS Education Requirements", note: "choose 2", type: "choose", count: 2,
-      courses: ["CSIS-365","CSIS-306"] },
-    electiveGroup(1),
-    MATH_SEQUENCE_GROUP,
-    { id: "aux", label: "Auxiliary", type: "all", courses: ["CSIS-011","MATH-250","MATH-351"] },
-  ]},
+  CY: {
+    name: "Cybersecurity Track",
+    source: "advising sheet 2024",
+    groups: [
+      coreGroup(),
+      { id: "cs-kernel", label: "Computer Science Kernel", note: "18 hrs", type: "all",
+        courses: ["CSIS-110","CSIS-120","CSIS-210","CSIS-225","CSIS-385","CSIS-411"] },
+      { id: "cyber-req", label: "Cybersecurity", note: "20–24 hrs", type: "all",
+        courses: ["CSIS-205","CSIS-220","CSIS-365","CSIS-306","SCDV-480"] },
+      { id: "cyber-sys", label: "Systems or Database", note: "choose ONE", type: "anyOf",
+        options: [
+          { id: "os",  label: "OS + C in Unix", courses: ["CSIS-330","CSIS-301"] },
+          { id: "db",  label: "Database",       courses: ["CSIS-350"] },
+        ] },
+      electiveGroup(1, "CSIS-300+ Elective"),
+      MATH_SEQUENCE_GROUP,
+      { id: "aux", label: "CS Auxiliary", note: "15–16 hrs", type: "all",
+        courses: ["MATH-250"] },
+      { id: "cy-law", label: "Crime & Policy", note: "choose ONE", type: "anyOf",
+        options: [
+          { id:"econ332",label:"ECON-332",courses:["ECON-332"] },
+          { id:"finc340",label:"FINC-340",courses:["FINC-340"] },
+          { id:"posc374",label:"POSC-374",courses:["POSC-374"] },
+          { id:"posc376",label:"POSC-376",courses:["POSC-376"] },
+          { id:"soci190",label:"SOCI-190",courses:["SOCI-190"] },
+        ] },
+      { id: "cy-forensic", label: "Audit & Forensics", note: "choose ONE", type: "anyOf",
+        options: [
+          { id:"acct430",label:"ACCT-430",courses:["ACCT-430"] },
+          { id:"acct462",label:"ACCT-462",courses:["ACCT-462"] },
+          { id:"acct472",label:"ACCT-472",courses:["ACCT-472"] },
+          { id:"chem100",label:"CHEM-100",courses:["CHEM-100"] },
+          { id:"chem105",label:"CHEM-105",courses:["CHEM-105"] },
+          { id:"psyc375",label:"PSYC-375",courses:["PSYC-375"] },
+        ] },
+      { id: "cy-ethics", label: "Ethics", note: "choose ONE", type: "anyOf",
+        options: [
+          { id:"mgmt305",label:"MGMT-305",courses:["MGMT-305"] },
+          { id:"phil315",label:"PHIL-315",courses:["PHIL-315"] },
+          { id:"phil210",label:"PHIL-210",courses:["PHIL-210"] },
+          { id:"relg365",label:"RELG-365",courses:["RELG-365"] },
+          { id:"relg260",label:"RELG-260",courses:["RELG-260"] },
+        ] },
+      { id: "cy-comm", label: "Communication", note: "choose ONE", type: "anyOf",
+        options: [
+          { id:"mgmt113",label:"MGMT-113",courses:["MGMT-113"] },
+          { id:"writ100",label:"WRIT-100",courses:["WRIT-100"] },
+          { id:"writ220",label:"WRIT-220",courses:["WRIT-220"] },
+        ] },
+    ],
+  },
+
+  // ── No advising sheet supplied — inferred from the offerings
+  //    spreadsheet track tags. Flagged in the panel as drafts.
 
   ADS: { name: "Applied Data Science", draft: true, groups: [
     coreGroup(),
@@ -171,7 +257,8 @@ const TRACK_REQUIREMENTS = {
       courses: ["CSIS-110","CSIS-120","CSIS-210","CSIS-350","CSIS-355","CSIS-320"] },
     electiveGroup(2),
     MATH_SEQUENCE_GROUP,
-    { id: "aux", label: "Auxiliary", type: "all", courses: ["CSIS-011","MATH-250","MATH-275"] },
+    { id: "aux", label: "Auxiliary", type: "all",
+      courses: ["CSIS-011","MATH-250","MATH-275"] },
   ]},
 };
 
@@ -340,10 +427,22 @@ function buildSuggestedPlan(trackCode, semesters, catalog, deps, capPerSem = 16)
     // dependent in the same term.
     const satisfiedBefore = new Set(scheduled);
     const isFinalYear = lastTwo.includes(sem.id);
+
+    // How many terms from here on could still take this course? A two-year
+    // rotation may have exactly one slot left, so it must claim a seat before
+    // a gen-ed that fits anywhere — otherwise it never gets placed.
+    const opportunities = id => semesters
+      .slice(semIdx)
+      .filter(s => isOffered(catalog[id], s)).length;
+
     let progress = true;
     while (progress) {
       progress = false;
-      for (const id of [...remaining]) {
+      const candidates = [...remaining].sort((a, b) =>
+        opportunities(a) - opportunities(b) ||
+        depth(b) - depth(a) ||
+        (courseNumber(a) || 0) - (courseNumber(b) || 0));
+      for (const id of candidates) {
         const c = catalog[id];
         const cr = c.credits || 0;
         if (credits[sem.id] + cr > capPerSem) continue;

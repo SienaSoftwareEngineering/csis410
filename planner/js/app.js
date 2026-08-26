@@ -294,11 +294,14 @@ function renderRequirements() {
   const ev = evaluateRequirements(track, AppState.plan, AppState.courses);
   loadBtn.disabled = false;
 
+  const meta = TRACK_REQUIREMENTS[track];
   summary.innerHTML = `
     <div class="req-title">${ev.name}</div>
     <div class="req-credits"><b>${ev.credits}</b> / 120 credits placed</div>
-    ${ev.draft ? `<div class="req-draft">Draft — derived from the offerings
-       spreadsheet, not an advising sheet. Verify before using with students.</div>` : ""}`;
+    ${ev.draft ? `<div class="req-draft">Draft — no advising sheet supplied for this
+       track, so it is inferred from the offerings spreadsheet. Verify before
+       using with students.</div>` : ""}
+    ${meta.note ? `<div class="req-note">${meta.note}</div>` : ""}`;
 
   body.innerHTML = "";
   ev.groups.forEach(group => {
@@ -313,16 +316,27 @@ function renderRequirements() {
 
     let bodyHtml;
     if (group.type === "anyOf") {
-      const opts = group.options.map(o => `
-        <div class="alt-option${o.active ? "" : " inactive"}${o.satisfied ? " satisfied" : ""}">
-          <div class="alt-label">${o.label}</div>
-          <div class="req-chips">
-            ${o.items.map(i => chipHtml(i.id, i.placed)).join("")}
-          </div>
-        </div>`);
-      bodyHtml = `<div class="alt-wrap">
-        ${opts.join(`<span class="alt-or">OR</span>`)}
-      </div>`;
+      // A long list of single-course alternatives reads better as a chip row
+      // than as a wall of OR-separated boxes.
+      const singles = group.options.every(o => o.items.length === 1);
+      if (singles && group.options.length > 2) {
+        bodyHtml = `<div class="req-chips">` + group.options.map(o => {
+          const i = o.items[0];
+          return `<span class="req-chip${i.placed ? " placed" : ""}${o.active ? "" : " faded"}"
+            data-course="${i.id}" title="${AppState.courses[i.id]?.name || i.id}">${i.id}</span>`;
+        }).join("") + `</div>`;
+      } else {
+        const opts = group.options.map(o => `
+          <div class="alt-option${o.active ? "" : " inactive"}${o.satisfied ? " satisfied" : ""}">
+            <div class="alt-label">${o.label}</div>
+            <div class="req-chips">
+              ${o.items.map(i => chipHtml(i.id, i.placed)).join("")}
+            </div>
+          </div>`);
+        bodyHtml = `<div class="alt-wrap">
+          ${opts.join(`<span class="alt-or">OR</span>`)}
+        </div>`;
+      }
     } else if (group.type === "choose") {
       const chosen = group.chosen.map(id => chipHtml(id, true)).join("");
       bodyHtml = `<div class="req-chips">${chosen ||
@@ -332,6 +346,15 @@ function renderRequirements() {
       bodyHtml = `<div class="req-chips">
         ${group.items.map(i => chipHtml(i.id, i.placed)).join("")}</div>`;
     }
+
+    // Core slots stand in for any of the many qualifying courses offered by
+    // other departments — they are attributes to satisfy, not real courses.
+    if (group.placeholder) {
+      bodyHtml += `<div class="req-placeholder">Each slot is a placeholder for any
+        course that carries that Core attribute — pick the actual course with
+        your advisor.</div>`;
+    }
+    if (group.hint) bodyHtml += `<div class="req-placeholder">${group.hint}</div>`;
 
     el.innerHTML = head + bodyHtml;
     body.appendChild(el);

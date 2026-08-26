@@ -24,7 +24,25 @@ html, body { height: 100%; overflow: hidden; margin: 0; font-family: system-ui, 
 .toolbar .divider { width: 1px; height: 24px; background: rgba(255,255,255,.2); margin: 0 3px; }
 
 /* ── Layout ──────────────────────────────────────────────── */
-.app-container { display: flex; height: calc(100vh - 48px); overflow: hidden; }
+/* 48px toolbar above, 34px disclaimer bar below */
+.app-container { display: flex; height: calc(100vh - 82px); overflow: hidden; }
+
+/* ── Standing disclaimer ─────────────────────────────────── */
+.disclaimer-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; height: 34px;
+  background: #fffbeb; border-top: 2px solid #fcd34d;
+  color: #78350f; font-size: .74rem; line-height: 1.3;
+  display: flex; align-items: center; gap: 9px;
+  padding: 0 14px; z-index: 500;
+}
+.disclaimer-flag {
+  background: #d97706; color: #fff; font-weight: 700;
+  font-size: .64rem; text-transform: uppercase; letter-spacing: .04em;
+  padding: 2px 7px; border-radius: 3px; white-space: nowrap; flex-shrink: 0;
+}
+.disclaimer-bar span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#toast-container { bottom: 42px; right: 0; }
+@media print { .disclaimer-bar { position: static; } }
 
 /* ── Course Bank ─────────────────────────────────────────── */
 /* z-index above .leader-line so arrows never spill across the sidebars —
@@ -161,6 +179,16 @@ html, body { height: 100%; overflow: hidden; margin: 0; font-family: system-ui, 
   border: 1px solid #fed7aa; border-radius: 4px;
   padding: 4px 6px; margin-top: 7px; line-height: 1.35;
 }
+.req-note {
+  font-size: .64rem; background: #eff6ff; color: #1e40af;
+  border: 1px solid #bfdbfe; border-radius: 4px;
+  padding: 4px 6px; margin-top: 7px; line-height: 1.35;
+}
+.req-placeholder {
+  font-size: .62rem; color: #9ca3af; line-height: 1.35;
+  margin-top: 4px; font-style: italic;
+}
+.req-chip.faded { opacity: .45; }
 .req-body { flex: 1; overflow-y: auto; padding: 9px 11px 14px; }
 .req-foot { padding: 9px 11px; border-top: 1px solid #ddd; background: #f0f0f0; }
 

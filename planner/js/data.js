@@ -19,10 +19,11 @@ const ALL_TRACK_CODES = Object.keys(TRACKS);
 
 // Category drives grouping + card colour when a course has no track pills.
 const CATEGORIES = {
-  cs:   { label: "Computer Science", color: "#2563eb" },
-  math: { label: "Math / Auxiliary", color: "#7c3aed" },
-  core: { label: "Core (Gen-Ed)",    color: "#6b7280" },
-  free: { label: "Free Elective",    color: "#94a3b8" },
+  cs:   { label: "Computer Science",   color: "#2563eb" },
+  math: { label: "Math / Auxiliary",   color: "#7c3aed" },
+  dept: { label: "Other Department",   color: "#0891b2" },
+  core: { label: "Core (Gen-Ed)",      color: "#6b7280" },
+  free: { label: "Free Elective",      color: "#94a3b8" },
 };
 
 // offering: semester = "every" | "fall" | "spring" | "both"
@@ -136,7 +137,124 @@ const DEFAULT_COURSES = {
   "CSIS-011": { name: "CS Orientation", credits: 1, category: "math",
     tracks: [], offering: { semester: "fall", period: 1 }, prerequisites: [] },
 
+  // ─── CS courses named only on the track sheets ────────
+  // Rotation unknown (not on the offerings spreadsheet) — left open so they
+  // never raise a false "not offered" warning.
+  "CSIS-106": { name: "Computing for Educators", credits: 3, category: "cs",
+    tracks: ["ED"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "CSIS-115": { name: "Information Systems Fundamentals", credits: 3, category: "cs",
+    tracks: ["IS"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "CSIS-180": { name: "Intro Web Development", credits: 3, category: "cs",
+    tracks: ["IS"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "CSIS-499": { name: "AI Capstone", credits: 3, category: "cs",
+    tracks: ["AI"], offering: { semester: "every", period: 1 }, prerequisites: ["CSIS-210"] },
+
+  // ─── Additional math ──────────────────────────────────
+  "MATH-210": { name: "Math 210", credits: 4, category: "math",
+    tracks: ["GD"], offering: { semester: "every", period: 1 }, prerequisites: ["MATH-120"] },
+  "MATH-220": { name: "Math 220", credits: 3, category: "math",
+    tracks: ["AI"], offering: { semester: "every", period: 1 }, prerequisites: ["MATH-120"] },
+  "MATH-230": { name: "Math 230", credits: 3, category: "math",
+    tracks: ["AI","GD"], offering: { semester: "every", period: 1 }, prerequisites: ["MATH-120"] },
+
+  // ─── BAAS upper level (Information Systems) ───────────
+  "BAAS-320": { name: "BAAS 320", credits: 3, category: "math",
+    tracks: ["IS"], offering: { semester: "every", period: 1 }, prerequisites: ["BAAS-200"] },
+  "BAAS-330": { name: "BAAS 330", credits: 3, category: "math",
+    tracks: ["IS"], offering: { semester: "every", period: 1 }, prerequisites: ["BAAS-200"] },
+  "BAAS-420": { name: "BAAS 420", credits: 3, category: "math",
+    tracks: ["IS"], offering: { semester: "every", period: 1 }, prerequisites: ["BAAS-320"] },
+
+  // ─── Other departments ────────────────────────────────
+  // Titles are placeholders — the track sheets list numbers only.
+  "DATA-110": { name: "Data 110", credits: 3, category: "dept",
+    tracks: ["AI"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "MUMD-225": { name: "MUMD 225", credits: 3, category: "dept",
+    tracks: ["GD"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "MUMD-490": { name: "MUMD 490 (Internship)", credits: 3, category: "dept",
+    tracks: ["GD"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "MRKT-212": { name: "Marketing 212", credits: 3, category: "dept",
+    tracks: ["EN"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "MGMT-211": { name: "Management 211", credits: 3, category: "dept",
+    tracks: ["IS"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "MGMT-230": { name: "Management 230", credits: 3, category: "dept",
+    tracks: ["IS"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "ENTR-310": { name: "Entrepreneurship 310", credits: 3, category: "dept",
+    tracks: ["EN"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "ENTR-332": { name: "Entrepreneurship 332", credits: 3, category: "dept",
+    tracks: ["EN"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "ENTR-340": { name: "Entrepreneurship 340", credits: 3, category: "dept",
+    tracks: ["EN"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "ENTR-410": { name: "Entrepreneurship 410", credits: 3, category: "dept",
+    tracks: ["EN"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+
+  // ─── Cyber auxiliary (titles from the 2024 Cyber sheet) ──
+  "ECON-332": { name: "Economics of Crime", credits: 3, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "FINC-340": { name: "Insurance and Risk Management", credits: 3, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "POSC-374": { name: "Introduction to Criminal Law", credits: 3, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "POSC-376": { name: "The 4th, 5th & 6th Amendments", credits: 3, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "SOCI-190": { name: "Crime, Justice and Public Policy", credits: 3, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "ACCT-430": { name: "Auditing", credits: 3, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "ACCT-462": { name: "Fraud and Forensic Accounting", credits: 3, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "ACCT-472": { name: "Computer Auditing and IT Controls", credits: 3, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "CHEM-100": { name: "Introduction to Forensic Science", credits: 3, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "CHEM-105": { name: "Criminalistics", credits: 4, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "PSYC-375": { name: "Forensic Psychology", credits: 3, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "MGMT-305": { name: "Business Ethics", credits: 3, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "PHIL-315": { name: "Ethics of Science and Technology", credits: 3, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "PHIL-210": { name: "Ethics", credits: 3, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "RELG-365": { name: "Religion, Values and Business", credits: 3, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "RELG-260": { name: "Religion and Moral Decision", credits: 3, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "MGMT-113": { name: "Business Communication", credits: 3, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "WRIT-100": { name: "Rhetoric & Writing", credits: 3, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "WRIT-220": { name: "Rhetoric and Oral Communication", credits: 3, category: "dept",
+    tracks: ["CY"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+
+  // ─── Education sequence (CS Education track) ──────────
+  "EDUC-210": { name: "Education 210 (counts as CDS)", credits: 3, category: "dept",
+    tracks: ["ED"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "EDUC-260": { name: "Education 260", credits: 3, category: "dept",
+    tracks: ["ED"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "EDUC-261": { name: "Education 261 (counts as CFD)", credits: 3, category: "dept",
+    tracks: ["ED"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "EDUC-365": { name: "Education 365", credits: 3, category: "dept",
+    tracks: ["ED"], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "EDUC-381": { name: "Education 381", credits: 3, category: "dept",
+    tracks: ["ED"], offering: { semester: "fall", period: 1 }, prerequisites: [] },
+  "EDUC-481": { name: "Education 481", credits: 3, category: "dept",
+    tracks: ["ED"], offering: { semester: "fall", period: 1 }, prerequisites: [] },
+  "EDUC-461": { name: "Education 461", credits: 3, category: "dept",
+    tracks: ["ED"], offering: { semester: "spring", period: 1 }, prerequisites: [] },
+  "EDUC-462": { name: "Education 462", credits: 1, category: "dept",
+    tracks: ["ED"], offering: { semester: "spring", period: 1 }, prerequisites: [] },
+  "EDUC-487": { name: "Student Teaching (487/488)", credits: 10, category: "dept",
+    tracks: ["ED"], offering: { semester: "spring", period: 1 }, prerequisites: [] },
+  "EDUC-495": { name: "Education 495", credits: 0, category: "dept",
+    tracks: ["ED"], offering: { semester: "spring", period: 1 }, prerequisites: [] },
+  "EDUC-496": { name: "Education 496", credits: 0, category: "dept",
+    tracks: ["ED"], offering: { semester: "spring", period: 1 }, prerequisites: [] },
+
   // ─── Core (Gen-Ed) requirements — 39 hrs ──────────────
+  // Each of these is a PLACEHOLDER for any of the many courses across other
+  // departments that satisfy that Core attribute — not a specific course.
   "CORE-FYS1":  { name: "First Yr Seminar I",  credits: 3, category: "core", tracks: [], offering: { semester: "fall",  period: 1 }, prerequisites: [] },
   "CORE-FYS2":  { name: "First Yr Seminar II", credits: 3, category: "core", tracks: [], offering: { semester: "spring", period: 1 }, prerequisites: [] },
   "CORE-ENGL":  { name: "English (CDE)",       credits: 3, category: "core", tracks: [], offering: { semester: "every", period: 1 }, prerequisites: [] },
@@ -160,6 +278,14 @@ const DEFAULT_COURSES = {
   "FREE-6": { name: "Free Elective", credits: 3, category: "free", tracks: [], offering: { semester: "every", period: 1 }, prerequisites: [] },
   "FREE-7": { name: "Free Elective", credits: 3, category: "free", tracks: [], offering: { semester: "every", period: 1 }, prerequisites: [] },
   "FREE-8": { name: "Free Elective", credits: 3, category: "free", tracks: [], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "FREE-9": { name: "Free Elective", credits: 3, category: "free", tracks: [], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "FREE-10": { name: "Free Elective", credits: 3, category: "free", tracks: [], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "FREE-11": { name: "Free Elective", credits: 3, category: "free", tracks: [], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "FREE-12": { name: "Free Elective", credits: 3, category: "free", tracks: [], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "FREE-13": { name: "Free Elective", credits: 3, category: "free", tracks: [], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "FREE-14": { name: "Free Elective", credits: 3, category: "free", tracks: [], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "FREE-15": { name: "Free Elective", credits: 3, category: "free", tracks: [], offering: { semester: "every", period: 1 }, prerequisites: [] },
+  "FREE-16": { name: "Free Elective", credits: 3, category: "free", tracks: [], offering: { semester: "every", period: 1 }, prerequisites: [] },
 };
 
 // Prerequisite edges. `altGroup` marks edges that are alternative routes to the
